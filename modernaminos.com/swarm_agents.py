@@ -5,7 +5,9 @@ from agno.models.google import Gemini
 def create_agent(role: str, profile_context: str) -> Agent:
     role = role.lower()
     
-    model_name = "gemini-2.0-flash"
+    model_name = os.getenv("MODEL")
+    if not model_name:
+        raise ValueError("MODEL environment variable is missing. Please set it in .env")
     gemini_model = Gemini(id=model_name)
     
     if role == "webscraper":
@@ -19,15 +21,35 @@ def create_agent(role: str, profile_context: str) -> Agent:
             )
         )
     elif role == "dataanalyst":
+        def search_duckduckgo(query: str) -> str:
+            """Searches DuckDuckGo for a query and returns the context. Use this if you need pharmacological data."""
+            from ddgs import DDGS
+            import time
+            try:
+                with DDGS(timeout=20) as ddgs:
+                    results = list(ddgs.text(query, max_results=5))
+                    if results:
+                        return " ".join([r.get("body", "") for r in results])
+                    return "No results found."
+            except Exception as e:
+                return f"Search failed: {e}"
+
         return Agent(
             model=gemini_model,
             role="DataAnalyst",
+            tools=[search_duckduckgo],
             description=(
-                f"You are a pharmacological DataAnalyst.\n{profile_context}\n"
-                "Process the raw text and extract:\n"
+                f"You are a pharmacological DataAnalyst equipped with a web search tool.\n{profile_context}\n"
+                "You MUST use your `search_duckduckgo` tool to retrieve accurate literature on unfamiliar compounds before outputting anything.\n"
+                "Process the discovered text and extract:\n"
                 "- Active mechanism of action (MoA)\n"
                 "- Biological half-life\n"
                 "- Primary side effects\n"
+                "- Purpose (What is the product for?)\n"
+                "- Target Audience (Who is it for?)\n"
+                "- Benefits (What are the key physiological or metabolic advantages?)\n"
+                "- Risks (What are the potential side effects, contraindications, or metabolic downsides?)\n"
+                "DO NOT output 'Unknown' for any values. Search recursively until you find the information.\n"
                 "Evaluate the compound against the GLOBAL PROFILE CONSTRAINT and output a binary "
                 "'approve' or 'reject' leverage_score, along with a 1-sentence justification. "
                 "Reject on sight any compounds that induce severe extracellular water retention, "

@@ -121,16 +121,24 @@ class ExecutivePlanner:
                         table_name = "pharmacology"
                         import pyarrow as pa
                         schema = pa.schema([
-                            pa.field("vector", pa.list_(pa.float32(), 128)),
+                            pa.field("vector", pa.list_(pa.float32(), 1536)),
                             pa.field("url_id", pa.int32()),
                             pa.field("text", pa.string())
                         ])
                         
+                        import openai
+                        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+                        embed_resp = client.embeddings.create(
+                            input=[analysis_text], 
+                            model="text-embedding-3-small"
+                        )
+                        vector = embed_resp.data[0].embedding
+                        
                         if table_name not in self.manager.vector_db.table_names():
-                            self.manager.vector_db.create_table(table_name, [{"vector": [0.0]*128, "url_id": url_id, "text": analysis_text}], schema=schema)
+                            self.manager.vector_db.create_table(table_name, [{"vector": vector, "url_id": url_id, "text": analysis_text}], schema=schema)
                         else:
                             tbl = self.manager.vector_db.open_table(table_name)
-                            tbl.add([{"vector": [0.0]*128, "url_id": url_id, "text": analysis_text}])
+                            tbl.add([{"vector": vector, "url_id": url_id, "text": analysis_text}])
                     except Exception as e:
                         print(f"LanceDB error: {e}")
                         pass
