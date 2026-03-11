@@ -1,6 +1,6 @@
 import sqlite3
 import time
-from ddgs import DDGS
+from duckduckgo_search import DDGS
 
 def setup_database(db_path: str):
     """
@@ -44,7 +44,7 @@ def extract_compound_data(compound_name: str) -> tuple[str, str, str]:
     results = {"moa": "Unknown", "half_life": "Unknown", "side_effects": "Unknown"}
     
     try:
-        with DDGS() as ddgs:
+        with DDGS(timeout=10) as ddgs:
             for key, query in queries.items():
                 time.sleep(2) # rate limit protection
                 search_results = list(ddgs.text(query, max_results=3))
@@ -65,14 +65,15 @@ def process_un_enriched_compounds(db_path: str):
     conn = setup_database(db_path)
     c = conn.cursor()
     
-    # Fetch records that need enrichment
-    c.execute("SELECT id, title FROM products WHERE leverage_score IS NULL")
+    # Fetch records that need enrichment (now fetching all to overwrite bad data)
+    c.execute("SELECT id, title FROM products")
     records = c.fetchall()
     
     print(f"Found {len(records)} records requiring enrichment.")
     
     for record_id, title in records:
-        print(f"Processing: {title}")
+        safe_title = title.encode('ascii', 'replace').decode('ascii')
+        print(f"Processing: {safe_title}")
         
         # 1. Extract data from web
         moa, half_life, side_effects = extract_compound_data(title)
