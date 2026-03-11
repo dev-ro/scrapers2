@@ -1,6 +1,6 @@
 import sqlite3
 import time
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 def setup_database(db_path: str):
     """
@@ -46,10 +46,12 @@ def extract_compound_data(compound_name: str) -> tuple[str, str, str]:
     try:
         with DDGS() as ddgs:
             for key, query in queries.items():
-                time.sleep(1) # rate limit protection
-                search_results = list(ddgs.text(query, max_results=1))
+                time.sleep(2) # rate limit protection
+                search_results = list(ddgs.text(query, max_results=3))
                 if search_results:
-                    results[key] = search_results[0].get("body", "Unknown")
+                    body = " ".join([r.get("body", "") for r in search_results])
+                    if body:
+                        results[key] = body[:250]
     except Exception as e:
         print(f"Extraction failed for {compound_name}: {e}")
         
@@ -91,10 +93,6 @@ def process_un_enriched_compounds(db_path: str):
     print("Enrichment process completed.")
     conn.close()
 
-if __name__ == "__main__":
-    import sys
-    db_path = "products.db" if len(sys.argv) == 1 else sys.argv[1]
-    process_un_enriched_compounds(db_path)
 
 def evaluate_leverage(title: str, moa: str, half_life: str, side_effects: str) -> tuple[int, str]:
     """
@@ -118,5 +116,16 @@ def evaluate_leverage(title: str, moa: str, half_life: str, side_effects: str) -
     if any(flag in combined_text for flag in cardio_flags):
         return 0, "Rejected: Compound induces severe cardiovascular strain or liver toxicity, compounding trenbolone baseline stress."
         
-    return 1, "Approved: Compound presents positive or neutral leverage against the physiological baseline."
+    moa_summary = moa[:60] + "..." if len(moa) > 60 else moa
+    se_summary = side_effects[:60] + "..." if len(side_effects) > 60 else side_effects
+    
+    if "unknown" in moa.lower() or "unknown" in side_effects.lower():
+        return 0, "Rejected: Insufficient pharmacological data extracted to guarantee baseline safety."
+        
+    return 1, f"Approved. MoA: {moa_summary} | Sides: {se_summary}"
+
+if __name__ == "__main__":
+    import sys
+    db_path = "products.db" if len(sys.argv) == 1 else sys.argv[1]
+    process_un_enriched_compounds(db_path)
 
