@@ -1,7 +1,11 @@
 import sqlite3
 import time
 from duckduckgo_search import DDGS
+from swarm_manager import SwarmManager
+import json
+from dotenv import load_dotenv
 
+load_dotenv('../.env')
 def setup_database(db_path: str):
     """
     Connects to the database and ensures the schema has the new enrichment columns.
@@ -31,31 +35,31 @@ def setup_database(db_path: str):
     conn.commit()
     return conn
 
-def extract_compound_data(compound_name: str) -> tuple[str, str, str]:
+def extract_compound_context(compound_name: str) -> str:
     """
     Queries DDG for Mechanism of Action, Half-Life, and Side Effects.
+    Returns combined raw text context for the LLM.
     """
-    queries = {
-        "moa": f"{compound_name} mechanism of action pharmacology",
-        "half_life": f"{compound_name} biological half life",
-        "side_effects": f"{compound_name} primary side effects bodybuilding"
-    }
+    queries = [
+        f"{compound_name} mechanism of action pharmacology",
+        f"{compound_name} biological half life",
+        f"{compound_name} primary side effects bodybuilding"
+    ]
     
-    results = {"moa": "Unknown", "half_life": "Unknown", "side_effects": "Unknown"}
+    combined_context = ""
     
     try:
         with DDGS(timeout=10) as ddgs:
-            for key, query in queries.items():
+            for query in queries:
                 time.sleep(2) # rate limit protection
                 search_results = list(ddgs.text(query, max_results=3))
                 if search_results:
                     body = " ".join([r.get("body", "") for r in search_results])
-                    if body:
-                        results[key] = body[:250]
+                    combined_context += body + " "
     except Exception as e:
         print(f"Extraction failed for {compound_name}: {e}")
         
-    return results["moa"], results["half_life"], results["side_effects"]
+    return combined_context
 
 def process_un_enriched_compounds(db_path: str):
     """
@@ -69,61 +73,76 @@ def process_un_enriched_compounds(db_path: str):
     c.execute("SELECT id, title FROM products")
     records = c.fetchall()
     
-    print(f"Found {len(records)} records requiring enrichment.")
+    manager = SwarmManager(db_path)
+    analyst = manager.get_agent("dataanalyst")
     
     for record_id, title in records:
         safe_title = title.encode('ascii', 'replace').decode('ascii')
         print(f"Processing: {safe_title}")
         
-        # 1. Extract data from web
-        moa, half_life, side_effects = extract_compound_data(title)
+        # 1. Extract raw context from web
+        raw_context = extract_compound_context(title)
         
-        # 2. Evaluate against baseline
-        score, justification = evaluate_leverage(title, moa, half_life, side_effects)
+        if not raw_context.strip():
+            print(f"No context found for {safe_title}. Skipping.")
+            continue
+            
+        # 2. Evaluate against baseline using LLM Swarm Agent
+        prompt = (
+            f"Extract pharmacological data in JSON format for the compound '{title}' "
+            f"from this text:\n\n{raw_context}\n\n"
+            "Your response must be exclusively valid JSON with these EXACT keys:\n"
+            '{"moa": "...", "half_life": "...", "side_effects": "...", "leverage_score": 1_or_0, "justification": "..."}'
+        )
         
-        # 3. Update database
-        c.execute('''
-            UPDATE products 
-            SET moa = ?, half_life = ?, side_effects = ?, leverage_score = ?, justification = ?
-            WHERE id = ?
-        ''', (moa, half_life, side_effects, score, justification, record_id))
-        
-        conn.commit()
-        time.sleep(1) # Base rate limit between compounds
-        
+        try:
+            print(f"Sending prompt to LLM for {safe_title}...")
+            analysis_resp = analyst.run(prompt)
+            analysis_text = analysis_resp.content if hasattr(analysis_resp, 'content') else str(analysis_resp)
+            
+            print(f"LLM Response received:\n{analysis_text[:200]}...")
+            
+            clean_json = analysis_text.strip()
+            if clean_json.startswith('```json'):
+                clean_json = clean_json.split('```json')[1].split('```')[0].strip()
+            elif clean_json.startswith('```'):
+                clean_json = clean_json.split('```')[1].split('```')[0].strip()
+                
+            data = json.loads(clean_json)
+            
+            moa = data.get('moa', 'Unknown')
+            half_life = data.get('half_life', 'Unknown')
+            side_effects = data.get('side_effects', 'Unknown')
+            
+            # Handle leverage score coercion (e.g. from string "reject" to int 0)
+            score_val = data.get('leverage_score', 0)
+            if isinstance(score_val, str):
+                score = 1 if score_val.lower() == 'approve' else 0
+            else:
+                score = int(score_val)
+                
+            justification = data.get('justification', 'Unknown')
+            
+            # 3. Update database
+            c.execute('''
+                UPDATE products 
+                SET moa = ?, half_life = ?, side_effects = ?, leverage_score = ?, justification = ?
+                WHERE id = ?
+            ''', (moa, half_life, side_effects, score, justification, record_id))
+            
+            conn.commit()
+            print(f"Successfully evaluated DB update for {safe_title}: Score {score}")
+            time.sleep(1) # Base rate limit between compounds
+            
+        except Exception as e:
+            print(f"Failed to evaluate {safe_title} with LLM: {str(e)}")
+            continue
+            
     print("Enrichment process completed.")
     conn.close()
 
 
-def evaluate_leverage(title: str, moa: str, half_life: str, side_effects: str) -> tuple[int, str]:
-    """
-    Evaluates compound against baseline parameters:
-    detrained male subject, 10-week testosterone/trenbolone enanthate, 2150 kcal deficit.
-    Returns (score, justification).
-    """
-    combined_text = f"{moa} {side_effects} {title}".lower()
-    
-    # Negative leverage flags
-    appetite_flags = ["ghrelin", "appetite", "hunger", "mk-677", "mk677"]
-    water_flags = ["water retention", "aromatiz", "estrogen", "gynecomastia", "edema", "dianabol"]
-    cardio_flags = ["cardiovascular strain", "liver toxicity", "hepatotoxic", "blood pressure spike"]
-    
-    if any(flag in combined_text for flag in appetite_flags):
-        return 0, "Rejected: Compound induces aggressive appetite spiking (ghrelin agonism) incompatible with 2150 kcal deficit."
-        
-    if any(flag in combined_text for flag in water_flags):
-        return 0, "Rejected: Compound induces heavy extracellular water retention or estrogenic conversion, contraindicating baseline fat loss goals."
-        
-    if any(flag in combined_text for flag in cardio_flags):
-        return 0, "Rejected: Compound induces severe cardiovascular strain or liver toxicity, compounding trenbolone baseline stress."
-        
-    moa_summary = moa[:60] + "..." if len(moa) > 60 else moa
-    se_summary = side_effects[:60] + "..." if len(side_effects) > 60 else side_effects
-    
-    if "unknown" in moa.lower() or "unknown" in side_effects.lower():
-        return 0, "Rejected: Insufficient pharmacological data extracted to guarantee baseline safety."
-        
-    return 1, f"Approved. MoA: {moa_summary} | Sides: {se_summary}"
+
 
 if __name__ == "__main__":
     import sys

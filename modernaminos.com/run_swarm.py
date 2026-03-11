@@ -19,7 +19,8 @@ def main():
     args = parser.parse_args()
 
     # Load from parent directory
-    dotenv_path = os.path.join(os.path.dirname(__dirname__), '.env')
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    dotenv_path = os.path.join(os.path.dirname(base_dir), '.env')
     load_dotenv(dotenv_path)
 
     print("Initializing AutoSwarm...")

@@ -1,10 +1,16 @@
+import os
 from agno.agent import Agent
+from agno.models.google import Gemini
 
 def create_agent(role: str, profile_context: str) -> Agent:
     role = role.lower()
     
+    model_name = "gemini-2.0-flash"
+    gemini_model = Gemini(id=model_name)
+    
     if role == "webscraper":
         return Agent(
+            model=gemini_model,
             role="WebScraper", 
             description=(
                 "You are an expert WebScraper. Your duty is to fetch raw content from URLs "
@@ -14,6 +20,7 @@ def create_agent(role: str, profile_context: str) -> Agent:
         )
     elif role == "dataanalyst":
         return Agent(
+            model=gemini_model,
             role="DataAnalyst",
             description=(
                 f"You are a pharmacological DataAnalyst.\n{profile_context}\n"
@@ -30,6 +37,7 @@ def create_agent(role: str, profile_context: str) -> Agent:
         )
     elif role == "databasewriter":
         return Agent(
+            model=gemini_model,
             role="DatabaseWriter",
             description=(
                 "You are a DatabaseWriter. Your duty is to safely interact with local SQLite "
@@ -38,6 +46,7 @@ def create_agent(role: str, profile_context: str) -> Agent:
         )
     elif role == "oodareviewer":
         return Agent(
+            model=gemini_model,
             role="OODAReviewer",
             description=(
                 "You are an OODA Reviewer agent. Evaluate original goals against completed outputs. "
@@ -47,6 +56,7 @@ def create_agent(role: str, profile_context: str) -> Agent:
         )
     elif role == "editorfeedback":
         return Agent(
+            model=gemini_model,
             role="EditorFeedback",
             description=(
                 "You are a validation agent. Review the data extracted by the DataAnalyst before "
@@ -56,6 +66,7 @@ def create_agent(role: str, profile_context: str) -> Agent:
         )
     elif role == "semanticevaluator":
         return Agent(
+            model=gemini_model,
             role="SemanticEvaluator",
             description=(
                 "You are a semantic evaluator monitoring sub-agent outputs continuously. Watch for "

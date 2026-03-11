@@ -1,0 +1,128 @@
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+Processing: 4x Blend: GHRP-2 (5mg) / Tesamorelin (5mg) / MGF (500mcg) / Ipamorelin (2.5mg)
+No context found for 4x Blend: GHRP-2 (5mg) / Tesamorelin (5mg) / MGF (500mcg) / Ipamorelin (2.5mg). Skipping.
+Processing: 5-Amino-1MQ
+No context found for 5-Amino-1MQ. Skipping.
+Processing: 5% RU-58841
+No context found for 5% RU-58841. Skipping.
+Processing: 9-Me-BC (9-Methyl-?-Carboline) 15MG
+ERROR    Error from Gemini API: 404 NOT_FOUND. {'error': {'code': 404,         
+         'message': 'models/gemini-3-flash-lite-preview is not found for API   
+         version v1beta, or is not supported for generateContent. Call         
+         ListModels to see the list of available models and their supported    
+         methods.', 'status': 'NOT_FOUND'}}                                    
+ERROR    Non-retryable model provider error: {                                 
+           "error": {                                                          
+             "code": 404,                                                      
+             "message": "models/gemini-3-flash-lite-preview is not found for   
+         API version v1beta, or is not supported for generateContent. Call     
+         ListModels to see the list of available models and their supported    
+         methods.",                                                            
+             "status": "NOT_FOUND"                                             
+           }                                                                   
+         }                                                                     
+                                                                               
+ERROR    Error in Agent run: {                                                 
+           "error": {                                                          
+             "code": 404,                                                      
+             "message": "models/gemini-3-flash-lite-preview is not found for   
+         API version v1beta, or is not supported for generateContent. Call     
+         ListModels to see the list of available models and their supported    
+         methods.",                                                            
+             "status": "NOT_FOUND"                                             
+           }                                                                   
+         }                                                                     
+                                                                               
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+Successfully evaluated DB update for 9-Me-BC (9-Methyl-?-Carboline) 15MG: Score 0
+Processing: AC-262
+No context found for AC-262. Skipping.
+Processing: Acetic Acid 0.6% Solution 10ML
+No context found for Acetic Acid 0.6% Solution 10ML. Skipping.
+Processing: AICAR 50MG
+ERROR    Error from Gemini API: 404 NOT_FOUND. {'error': {'code': 404,         
+         'message': 'models/gemini-3-flash-lite-preview is not found for API   
+         version v1beta, or is not supported for generateContent. Call         
+         ListModels to see the list of available models and their supported    
+         methods.', 'status': 'NOT_FOUND'}}                                    
+ERROR    Non-retryable model provider error: {                                 
+           "error": {                                                          
+             "code": 404,                                                      
+             "message": "models/gemini-3-flash-lite-preview is not found for   
+         API version v1beta, or is not supported for generateContent. Call     
+         ListModels to see the list of available models and their supported    
+         methods.",                                                            
+             "status": "NOT_FOUND"                                             
+           }                                                                   
+         }                                                                     
+                                                                               
+ERROR    Error in Agent run: {                                                 
+           "error": {                                                          
+             "code": 404,                                                      
+             "message": "models/gemini-3-flash-lite-preview is not found for   
+         API version v1beta, or is not supported for generateContent. Call     
+         ListModels to see the list of available models and their supported    
+         methods.",                                                            
+             "status": "NOT_FOUND"                                             
+           }                                                                   
+         }                                                                     
+                                                                               
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+Successfully evaluated DB update for AICAR 50MG: Score 0
+Processing: Alpha GPC 400MG
+No context found for Alpha GPC 400MG. Skipping.
+Processing: Aminotadalafil
+ERROR    Error from Gemini API: 404 NOT_FOUND. {'error': {'code': 404,         
+         'message': 'models/gemini-3-flash-lite-preview is not found for API   
+         version v1beta, or is not supported for generateContent. Call         
+         ListModels to see the list of available models and their supported    
+         methods.', 'status': 'NOT_FOUND'}}                                    
+ERROR    Non-retryable model provider error: {                                 
+           "error": {                                                          
+             "code": 404,                                                      
+             "message": "models/gemini-3-flash-lite-preview is not found for   
+         API version v1beta, or is not supported for generateContent. Call     
+         ListModels to see the list of available models and their supported    
+         methods.",                                                            
+             "status": "NOT_FOUND"                                             
+           }                                                                   
+         }                                                                     
+                                                                               
+ERROR    Error in Agent run: {                                                 
+           "error": {                                                          
+             "code": 404,                                                      
+             "message": "models/gemini-3-flash-lite-preview is not found for   
+         API version v1beta, or is not supported for generateContent. Call     
+         ListModels to see the list of available models and their supported    
+         methods.",                                                            
+             "status": "NOT_FOUND"                                             
+           }                                                                   
+         }                                                                     
+                                                                               
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+C:\Users\kyle0\Desktop\code\scrapers2\modernaminos.com\enrichment.py:52: RuntimeWarning: This package (`duckduckgo_search`) has been renamed to `ddgs`! Use `pip install ddgs` instead.
+  with DDGS(timeout=10) as ddgs:
+memory allocation of 4194370 bytes failed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
