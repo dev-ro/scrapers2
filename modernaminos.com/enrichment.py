@@ -1,4 +1,6 @@
 import sqlite3
+import time
+from duckduckgo_search import DDGS
 
 def setup_database(db_path: str):
     """
@@ -28,6 +30,71 @@ def setup_database(db_path: str):
                 
     conn.commit()
     return conn
+
+def extract_compound_data(compound_name: str) -> tuple[str, str, str]:
+    """
+    Queries DDG for Mechanism of Action, Half-Life, and Side Effects.
+    """
+    queries = {
+        "moa": f"{compound_name} mechanism of action pharmacology",
+        "half_life": f"{compound_name} biological half life",
+        "side_effects": f"{compound_name} primary side effects bodybuilding"
+    }
+    
+    results = {"moa": "Unknown", "half_life": "Unknown", "side_effects": "Unknown"}
+    
+    try:
+        with DDGS() as ddgs:
+            for key, query in queries.items():
+                time.sleep(1) # rate limit protection
+                search_results = list(ddgs.text(query, max_results=1))
+                if search_results:
+                    results[key] = search_results[0].get("body", "Unknown")
+    except Exception as e:
+        print(f"Extraction failed for {compound_name}: {e}")
+        
+    return results["moa"], results["half_life"], results["side_effects"]
+
+def process_un_enriched_compounds(db_path: str):
+    """
+    Main orchestration function to fetch null records, extract data,
+    evaluate leverage, and update the database.
+    """
+    conn = setup_database(db_path)
+    c = conn.cursor()
+    
+    # Fetch records that need enrichment
+    c.execute("SELECT id, title FROM products WHERE leverage_score IS NULL")
+    records = c.fetchall()
+    
+    print(f"Found {len(records)} records requiring enrichment.")
+    
+    for record_id, title in records:
+        print(f"Processing: {title}")
+        
+        # 1. Extract data from web
+        moa, half_life, side_effects = extract_compound_data(title)
+        
+        # 2. Evaluate against baseline
+        score, justification = evaluate_leverage(title, moa, half_life, side_effects)
+        
+        # 3. Update database
+        c.execute('''
+            UPDATE products 
+            SET moa = ?, half_life = ?, side_effects = ?, leverage_score = ?, justification = ?
+            WHERE id = ?
+        ''', (moa, half_life, side_effects, score, justification, record_id))
+        
+        conn.commit()
+        time.sleep(1) # Base rate limit between compounds
+        
+    print("Enrichment process completed.")
+    conn.close()
+
+if __name__ == "__main__":
+    import sys
+    db_path = "products.db" if len(sys.argv) == 1 else sys.argv[1]
+    process_un_enriched_compounds(db_path)
 
 def evaluate_leverage(title: str, moa: str, half_life: str, side_effects: str) -> tuple[int, str]:
     """
