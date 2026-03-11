@@ -1,0 +1,53 @@
+name: Continuous Integration & Deployment
+
+on:
+  push:
+    branches: [ "main", "feat/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate:
+    name: Execute TDD Enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install UV Package Manager
+        uses: astral-sh/setup-uv@v5
+        
+      - name: Initialize Python Environment
+        run: uv python install
+        
+      - name: Resolve Project Dependencies
+        working-directory: ./modernaminos.com
+        run: uv sync
+        
+      - name: Ensure Browsers Are Installed
+        working-directory: ./modernaminos.com
+        run: uv run playwright install chromium
+        
+      - name: Execute Pytest Validation Logic
+        working-directory: ./modernaminos.com
+        run: uv run pytest tests/ -v
+
+  deploy:
+    name: Firebase Routing & Deployment
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Provision Deployment Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+        
+      - name: Initialize Firebase Remote State
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: firebase deploy --only hosting,functions --non-interactive --token $FIREBASE_TOKEN

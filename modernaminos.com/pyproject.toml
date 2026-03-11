@@ -5,10 +5,16 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "agno>=2.5.9",
     "beautifulsoup4>=4.14.3",
     "curl-cffi>=0.14.0",
     "ddgs>=9.11.3",
+    "lancedb>=0.29.2",
     "lxml>=6.0.2",
+    "pandas>=3.0.1",
+    "playwright>=1.58.0",
     "pytest>=9.0.2",
+    "python-dotenv>=1.2.2",
     "requests>=2.32.5",
+    "tantivy>=0.25.1",
 ]
