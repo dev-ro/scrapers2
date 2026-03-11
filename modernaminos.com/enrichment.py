@@ -66,8 +66,11 @@ def process_un_enriched_compounds(db_path: str):
     conn = setup_database(db_path)
     c = conn.cursor()
     
-    # Fetch records that need enrichment (now fetching all to overwrite bad data)
-    c.execute("SELECT id, title FROM products")
+    # Surgical query: fetch records where ANY enrichment field is NULL or 'None'
+    fields = ["moa", "half_life", "side_effects", "purpose", "target_audience", "benefits", "risks"]
+    where_clause = " OR ".join([f"{f} IS NULL OR {f} = 'None'" for f in fields])
+    
+    c.execute(f"SELECT id, title FROM products WHERE {where_clause}")
     records = c.fetchall()
     
     manager = SwarmManager(db_path)
